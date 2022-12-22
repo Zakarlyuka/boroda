@@ -1,17 +1,32 @@
-const sass = require('gulp-sass')(require('sass'));
+"use strict";
 
-'use strict';
+var gulp = require("gulp");
+var sass = require("gulp-sass");
+var plumber = require("gulp-plumber");
+var postcss = require("gulp-postcss");
+var autoprefixer = require("autoprefixer");
+var server = require ("browser-sync").create();
 
-const gulp = require('gulp');
-const sass = require('gulp-sass')(require('sass'));
+gulp.task("style", function() {
+  gulp.src("sass/style.scss")
+    .pipe(plumber())
+    .pipe (sass())
+    .pipe(postcss([
+      autoprefixer()
+    ]))
+  .pipe(gulp.dest("css"))
+  .pipe(server.stream());
+  });
 
-function buildStyles() {
-  return gulp.src('./sass/**/*.scss')
-    .pipe(sass().on('error', sass.logError))
-    .pipe(gulp.dest('./css'));
-};
+gulp.task("serve", ["style"], function () {
+    server.init({
+    server: ".",
+    notify: false,
+    open: true,
+    cors: true,
+    ui: false
+    });
 
-exports.buildStyles = buildStyles;
-exports.watch = function () {
-  gulp.watch('./sass/**/*.scss', ['sass']);
-};
+gulp.watch("sass./**/*.{scss,css}", ["style"]);
+gulp.watch("*.html").on("change", server.reload);
+  });
